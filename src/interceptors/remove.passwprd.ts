@@ -12,11 +12,16 @@ export class RemovePasswordInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((value) => {
         if (Array.isArray(value))
-          return value.map((v) => ({
-            ...v,
-            password: undefined,
-          }));
-        value.password = undefined;
+          return value.map((v) =>
+            typeof v === 'object' && v.password
+              ? {
+                  ...v,
+                  password: undefined,
+                }
+              : v,
+          );
+        if (typeof value === 'object' && value.password)
+          value.password = undefined;
         return value;
       }),
     );

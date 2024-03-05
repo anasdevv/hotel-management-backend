@@ -7,6 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -64,5 +65,12 @@ export class UsersService {
       throw new UnauthorizedException('Invalid credentials');
     }
     return user;
+  }
+  async getUser({ email }: Prisma.UserWhereUniqueInput) {
+    return this.prisma.user.findUniqueOrThrow({
+      where: {
+        email,
+      },
+    });
   }
 }
