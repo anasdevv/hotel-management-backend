@@ -11,19 +11,22 @@ export class AuthService {
     private configService: ConfigService,
     private jwtService: JwtService,
   ) {}
-  async login(user: Omit<User, 'password'>, response: Response) {
+  async login(user: Omit<User, 'password'>) {
     const tokenPayload: TokenPayload = {
       email: user.email,
+      role: user.role,
     };
     const expires = new Date();
     expires.setSeconds(
       expires.getSeconds() + this.configService.get('JWT_EXPIRATION'),
     );
     const token = await this.jwtService.signAsync(tokenPayload);
-    response.cookie('Authentication', token, {
-      expires,
-      httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
-    });
+    return {
+      ...user,
+      token: {
+        expiresIn: expires,
+        access_token: token,
+      },
+    };
   }
 }
