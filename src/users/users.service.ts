@@ -1,5 +1,6 @@
 import {
   Injectable,
+  NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -54,16 +55,19 @@ export class UsersService {
     throw new UnprocessableEntityException('User already exists');
   }
   async validateUser(email: string, password: string) {
-    const { password: userPassword, ...user } =
-      await this.prisma.user.findUnique({
-        where: {
-          email,
-        },
-      });
-    const isPasswordValid = await bcrypt.compare(password, userPassword);
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found ! Try signing in');
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
+    delete user.password;
     return user;
   }
   async getUser({ email }: Prisma.UserWhereUniqueInput) {

@@ -5,6 +5,7 @@ import {
   Request,
   UseInterceptors,
   Res,
+  HttpCode,
 } from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local.guard';
 import { RemovePasswordInterceptor } from 'src/interceptors/remove.passwprd';
@@ -12,6 +13,7 @@ import { CurrentUser } from 'src/decorators/current.user';
 import { User } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
+import { HTTP_CODE_METADATA } from '@nestjs/common/constants';
 @UseInterceptors(RemovePasswordInterceptor)
 @Controller('auth')
 export class AuthController {
@@ -27,5 +29,16 @@ export class AuthController {
   ) {
     await this.authService.login(user, response);
     response.send(user);
+  }
+  async logout(
+    @Res({
+      passthrough: true,
+    })
+    response: Response,
+  ) {
+    await this.authService.logout(response);
+    return response.send({
+      message: 'User logged out',
+    });
   }
 }

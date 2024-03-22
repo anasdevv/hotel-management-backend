@@ -21,9 +21,14 @@ export class AuthService {
     );
     const token = await this.jwtService.signAsync(tokenPayload);
     response.cookie('Authentication', token, {
-      expires,
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
+    });
+  }
+  async logout(response: Response) {
+    console.log(response.cookie);
+    response.cookie('Authentication', '', {
+      expires: new Date(Date.now()),
     });
   }
 }
