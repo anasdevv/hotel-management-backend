@@ -18,10 +18,15 @@ async function bootstrap() {
       whitelist: true,
       exceptionFactory: (validationErrors: ValidationError[] = []) => {
         return new BadRequestException(
-          validationErrors.map((error) => ({
-            field: error.property,
-            error: Object.values(error.constraints).join(', '),
-          })),
+          validationErrors.map((error) => {
+            console.log('const ', error.constraints);
+            console.log('prop ', error.property);
+
+            return {
+              field: error.property,
+              error: Object.values(error.constraints).join(', '),
+            };
+          }),
         );
       },
     }),

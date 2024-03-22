@@ -1,23 +1,34 @@
-import { Exclude, Transform, TransformFnParams } from 'class-transformer';
-import { IsAlphanumeric, IsEmail, IsString, Length } from 'class-validator';
-import { IsNotBlank } from 'src/decorators/not.empty.blank';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export class CreateUserDto {
+  @IsString()
+  @Length(1, 50)
+  name: string;
   @IsEmail()
   email: string;
 
-  @Transform(({ value }: TransformFnParams) => value?.trim())
-  @Length(6)
-  //   @Exclude()
+  @IsString()
+  @Length(8, 100)
   password: string;
 
-  @Transform(({ value }: TransformFnParams) => value?.trim())
-  @Length(4)
-  @IsString()
-  firstName: string;
+  @IsNotEmpty()
+  @Matches(/^[0-9]+$/, {
+    message: 'Please provide only digits without any special characters.',
+  })
+  phoneNumber: string;
 
-  @Transform(({ value }: TransformFnParams) => value?.trim())
-  @Length(4)
+  @IsOptional()
   @IsString()
-  lastName: string;
+  profilePicture?: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
 }
