@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  name           String
+  email          String    @unique
+  password       String
+  phoneNumber    String
+  profilePicture String?
+  country        String?
+  role           String    @default("guest")
+  createdAt      DateTime  @default(now())
+  bookings       Booking[]
+}
+
+model Room {
+  id           Int       @id @default(autoincrement())
+  title        String
+  createdAt    DateTime  @default(now())
+  maxCapacity  Int
+  regularPrice Int
+  discount     Int
+  description  String
+  roomImage    String
+  features     Feature[]
+  Booking      Booking[]
+}
+
+model Feature {
+  id          Int    @id @default(autoincrement())
+  featureName String
+  Room        Room?  @relation(fields: [roomId], references: [id])
+  roomId      Int?
+}
+
+model Booking {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  startDate    DateTime
+  endDate      DateTime
+  numNights    Int
+  totalPrice   Int
+  status       String
+  checkinDate  DateTime
+  checkoutDate DateTime
+  User         User?    @relation(fields: [userId], references: [id])
+  userId       Int?
+  room         Room     @relation(fields: [roomId], references: [id])
+  roomId       Int
+}
+
+model FoodItem {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  price       Int
+  picture     String
+  Order       Order[]
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  foodItem     FoodItem    @relation(fields: [foodItemId], references: [id])
+  foodItemId   Int
+  quantity     Int
+  OrderItems   OrderItems? @relation(fields: [orderItemsId], references: [id])
+  orderItemsId Int?
+}
+
+model OrderItems {
+  id     Int     @id @default(autoincrement())
+  orders Order[]
+  // item
+}
