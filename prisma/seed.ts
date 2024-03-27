@@ -5,10 +5,21 @@ import { faker } from '@faker-js/faker';
 // initialize Prisma Client
 const prisma = new PrismaClient();
 const fakerUser = (): any => ({
-  firstName: faker.person.firstName(),
-  lastName: faker.person.lastName(),
+  // id: faker.number.bigInt(),
+  name: faker.person.firstName() + faker.person.lastName(),
   email: faker.internet.email(),
   password: faker.internet.password(),
+  phoneNumber: faker.phone.number(),
+});
+const fakeBooking = () => {};
+const fakeRoom = () => ({
+  // id: faker.number.bigInt(),
+  description: faker.lorem.sentences(5),
+  regularPrice: faker.number.int(),
+  discount: faker.number.float(),
+  title: faker.lorem.lines(1),
+  maxCapacity: 10,
+  roomImage: '/default.png',
 });
 async function main() {
   // create fake users
@@ -16,10 +27,32 @@ async function main() {
   console.log('Seeding...');
   /// --------- Users ---------------
   const users = [];
+  const bookings = [];
   for (let i = 0; i < fakerRounds; i++) {
     users[i] = prisma.user.create({ data: fakerUser() });
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 2);
+    const room = fakeRoom();
+
+    bookings[i] = prisma.booking.create({
+      data: {
+        room: {
+          create: fakeRoom(),
+        },
+        User: {
+          create: fakerUser(),
+        },
+        startDate,
+        endDate,
+        numNights: 2,
+        status: 'confirmed',
+        totalPrice:
+          (room.regularPrice - (room.regularPrice * room.discount) / 100) * 2,
+      },
+    });
   }
-  await Promise.all(users);
+  await Promise.all([users, bookings]);
   console.log(`generated ${fakerRounds} users`);
 }
 
