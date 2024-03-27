@@ -1,29 +1,3 @@
-// import { Injectable } from '@nestjs/common';
-// import { CreateBookingDto } from './dto/create-booking.dto';
-// import { UpdateBookingDto } from './dto/update-booking.dto';
-
-// @Injectable()
-// export class BookingService {
-//   create(createBookingDto: CreateBookingDto) {
-//     return 'This action addss a new booking';
-//   }
-
-//   findAll() {
-//     return `This action returns all booking`;
-//   }
-
-//   findOne(id: number) {
-//     return `This action returns a #${id} booking`;
-//   }
-
-//   update(id: number, updateBookingDto: UpdateBookingDto) {
-//     return `This action updates a #${id} booking`;
-//   }
-
-//   remove(id: number) {
-//     return `This action removes a #${id} booking`;
-//   }
-// }
 import {
   Injectable,
   NotFoundException,
@@ -42,7 +16,7 @@ export class BookingService {
     await this.validateCreateBooking(
       createBookingDto.startDate,
       createBookingDto.endDate,
-      createBookingDto.cabinId,
+      createBookingDto.roomId,
     );
     return this.prisma.booking.create({ data: createBookingDto });
   }
@@ -56,40 +30,40 @@ export class BookingService {
   }
 
   async update(id: number, updateBookingDto: UpdateBookingDto) {
-    const booking = await this.prisma.booking.findUnique({ where: { id } });
-    if (!booking) {
-      throw new NotFoundException(`Booking with ID ${id} not found`);
-    }
+    try {
+      const booking = await this.prisma.booking.findUnique({ where: { id } });
+      if (!booking) {
+        throw new NotFoundException(`Booking with ID ${id} not found`);
+      }
 
-    return this.prisma.booking
-      .update({
+      return this.prisma.booking.update({
         where: { id },
         data: updateBookingDto,
-      })
-      .catch((error) => {
-        throw new BadRequestException(error.message);
       });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   async remove(id: number) {
-    const booking = await this.prisma.booking.findUnique({ where: { id } });
-    if (!booking) {
-      throw new NotFoundException(`Booking with ID ${id} not found`);
-    }
+    try {
+      const booking = await this.prisma.booking.findUnique({ where: { id } });
+      if (!booking) {
+        throw new NotFoundException(`Booking with ID ${id} not found`);
+      }
 
-    return this.prisma.booking
-      .delete({ where: { id } })
-      .then(() => `Booking with ID ${id} deleted successfully`)
-      .catch((error) => {
-        throw new BadRequestException(error.message);
-      });
+      await this.prisma.booking.delete({ where: { id } });
+      return `Booking with ID ${id} deleted successfully`;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  async validateCreateBooking(startDate: Date, endDate: Date, cabinId: number) {
+  async validateCreateBooking(startDate: Date, endDate: Date, roomId: number) {
     const existingBooking = await this.prisma.booking.findFirst({
       where: {
         AND: [
-          { cabinId: cabinId },
+          { roomId: roomId },
           {
             OR: [
               { startDate: { lte: startDate }, endDate: { gte: startDate } },
