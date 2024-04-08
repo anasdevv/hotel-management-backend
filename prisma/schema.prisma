@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id             Int       @id @default(autoincrement())
+  id             String    @id @default(uuid())
   name           String
   email          String    @unique
   password       String
@@ -24,10 +24,11 @@ model User {
   role           String    @default("guest")
   createdAt      DateTime  @default(now())
   bookings       Booking[]
+  reviews        Review[]
 }
 
 model Room {
-  id           Int       @id @default(autoincrement())
+  id           String    @id @default(uuid())
   title        String
   createdAt    DateTime  @default(now())
   maxCapacity  Int
@@ -37,17 +38,18 @@ model Room {
   roomImage    String
   features     Feature[]
   Booking      Booking[]
+  reviews      Review[]
 }
 
 model Feature {
-  id          Int    @id @default(autoincrement())
+  id          String  @id @default(uuid())
   featureName String
-  Room        Room?  @relation(fields: [roomId], references: [id])
-  roomId      Int?
+  Room        Room?   @relation(fields: [roomId], references: [id])
+  roomId      String?
 }
 
 model Booking {
-  id           Int       @id @default(autoincrement())
+  id           String    @id @default(uuid())
   createdAt    DateTime  @default(now())
   startDate    DateTime
   endDate      DateTime
@@ -57,13 +59,13 @@ model Booking {
   checkinDate  DateTime?
   checkoutDate DateTime?
   User         User?     @relation(fields: [userId], references: [id])
-  userId       Int?
+  userId       String?
   room         Room      @relation(fields: [roomId], references: [id])
-  roomId       Int
+  roomId       String
 }
 
 model FoodItem {
-  id          Int     @id @default(autoincrement())
+  id          String  @id @default(uuid())
   name        String
   description String?
   price       Int
@@ -72,16 +74,26 @@ model FoodItem {
 }
 
 model Order {
-  id           Int         @id @default(autoincrement())
+  id           String      @id @default(uuid())
   foodItem     FoodItem    @relation(fields: [foodItemId], references: [id])
-  foodItemId   Int
+  foodItemId   String
   quantity     Int
   OrderItems   OrderItems? @relation(fields: [orderItemsId], references: [id])
-  orderItemsId Int?
+  orderItemsId String?
 }
 
 model OrderItems {
-  id     Int     @id @default(autoincrement())
+  id     String  @id @default(uuid())
   orders Order[]
   // item
+}
+
+model Review {
+  id      String  @id @default(uuid())
+  comment String
+  rating  Float
+  User    User?   @relation(fields: [userId], references: [id])
+  userId  String?
+  Room    Room?   @relation(fields: [roomId], references: [id])
+  roomId  String?
 }
