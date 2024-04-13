@@ -55,6 +55,8 @@ model Booking {
   endDate      DateTime
   numNights    Int
   totalPrice   Int
+  isDeleted    Boolean   @default(false)
+  hasBreakfast Boolean
   status       String
   checkinDate  DateTime?
   checkoutDate DateTime?
