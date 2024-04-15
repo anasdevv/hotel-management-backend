@@ -27,6 +27,7 @@ async function main() {
   const fakerRounds = 10;
   console.log('Seeding...');
   const bookings = [];
+  const rooms = [];
   for (let i = 0; i < fakerRounds; i++) {
     const startDate = new Date();
     const endDate = new Date(startDate);
@@ -49,8 +50,9 @@ async function main() {
           (room.regularPrice - (room.regularPrice * room.discount) / 100) * 2,
       },
     });
+    rooms[i] = fakeRoom();
   }
-  await Promise.all(bookings);
+  await Promise.all([...bookings, ...rooms]);
   console.log(`generated ${fakerRounds} users`);
 }
 

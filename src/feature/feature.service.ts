@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFeatureDto } from './dto/create-feature.dto';
 import { UpdateFeatureDto } from './dto/update-feature.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -13,15 +13,21 @@ export class FeatureService {
   }
 
   findAll() {
-    return `This action returns all feature`;
+    return this.prismaService.feature.findMany({});
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} feature`;
-  }
-
-  update(id: number, updateFeatureDto: UpdateFeatureDto) {
-    return `This action updates a #${id} feature`;
+  async update(id: string, updateFeatureDto: UpdateFeatureDto) {
+    try {
+      await this.prismaService.feature.findFirstOrThrow({
+        where: { id },
+      });
+      return this.prismaService.feature.update({
+        data: updateFeatureDto,
+        where: { id },
+      });
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 
   remove(id: number) {

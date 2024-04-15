@@ -44,7 +44,7 @@ export class UsersService {
   }
   async validateCreateUser(email: string) {
     try {
-      const res = await this.prisma.user.findUniqueOrThrow({
+      await this.prisma.user.findUniqueOrThrow({
         where: {
           email,
         },

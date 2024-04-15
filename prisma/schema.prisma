@@ -39,6 +39,7 @@ model Room {
   features     Feature[]
   Booking      Booking[]
   reviews      Review[]
+  isDeleted    Boolean   @default(false)
 }
 
 model Feature {
