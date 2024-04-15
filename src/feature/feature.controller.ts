@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { FeatureService } from './feature.service';
 import { CreateFeatureDto } from './dto/create-feature.dto';
 import { UpdateFeatureDto } from './dto/update-feature.dto';
@@ -17,14 +25,9 @@ export class FeatureController {
     return this.featureService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.featureService.findOne(+id);
-  }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateFeatureDto: UpdateFeatureDto) {
-    return this.featureService.update(+id, updateFeatureDto);
+    return this.featureService.update(id, updateFeatureDto);
   }
 
   @Delete(':id')
