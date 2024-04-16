@@ -10,6 +10,7 @@ import { RoomModule } from './room/room.module';
 import { BookingModule } from './booking/booking.module';
 import { FoodItemModule } from './food-item/food-item.module';
 import { FeatureModule } from './feature/feature.module';
+import { OrderFoodModule } from './order-food/order-food.module';
 import * as Joi from 'joi';
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import * as Joi from 'joi';
     BookingModule,
     FoodItemModule,
     FeatureModule,
+    OrderFoodModule,
   ],
   controllers: [AppController],
   providers: [AppService],
