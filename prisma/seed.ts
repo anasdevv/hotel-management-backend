@@ -23,22 +23,36 @@ const fakeRoom = () => ({
   maxCapacity: 10,
   roomImage: '/default.png',
 });
+const fakeFoodItem = () => ({
+  name: faker.lorem.words(2),
+  picture: '/abc.png',
+  price: faker.number.int({
+    max: 100,
+    min: 10,
+  }),
+  description: faker.lorem.lines(2),
+});
 async function main() {
   const fakerRounds = 10;
   console.log('Seeding...');
   const bookings = [];
   const rooms = [];
+  const foodItems = [];
+  const orders = [];
   for (let i = 0; i < fakerRounds; i++) {
     const startDate = new Date();
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 2);
     const room = fakeRoom();
+    foodItems[i] = prisma.foodItem.create({
+      data: fakeFoodItem(),
+    });
     bookings[i] = prisma.booking.create({
       data: {
         room: {
           create: room,
         },
-        User: {
+        user: {
           create: fakerUser(),
         },
         startDate,
@@ -50,9 +64,23 @@ async function main() {
           (room.regularPrice - (room.regularPrice * room.discount) / 100) * 2,
       },
     });
+    orders[i] = prisma.order.create({
+      data: {
+        // price is not correct
+        totalPrice: 2000,
+        items: {
+          create: {
+            quantity: 3,
+            foodItem: {
+              create: fakeFoodItem(),
+            },
+          },
+        },
+      },
+    });
     rooms[i] = fakeRoom();
   }
-  await Promise.all([...bookings, ...rooms]);
+  await Promise.all([...bookings, ...rooms, ...foodItems, ...orders]);
   console.log(`generated ${fakerRounds} users`);
 }
 

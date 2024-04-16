@@ -72,16 +72,17 @@ model FoodItem {
   id          String      @id @default(uuid())
   name        String
   description String?
-  price       Int
+  price       Float
   picture     String
   isDeleted   Boolean     @default(false)
   orders      OrderItem[]
 }
 
 model Order {
-  id        String      @id @default(uuid())
-  createdAt DateTime    @default(now())
-  items     OrderItem[]
+  id         String      @id @default(uuid())
+  createdAt  DateTime    @default(now())
+  items      OrderItem[]
+  totalPrice Float
 }
 
 model OrderItem {
