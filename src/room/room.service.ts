@@ -52,7 +52,7 @@ export class RoomService {
     if (filter.orderBy) {
       if (filter.orderBy === 'bookings') {
         query['orderBy'] = {
-          Booking: {
+          booking: {
             _count: filter.sort ?? 'desc',
           },
         };
@@ -101,7 +101,7 @@ export class RoomService {
         ...query,
         where: {
           ...query.where,
-          Booking: {
+          booking: {
             some: {},
           },
         },
