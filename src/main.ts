@@ -4,6 +4,7 @@ import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
+import * as morgan from 'morgan';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -11,6 +12,8 @@ async function bootstrap() {
     cors: true,
   });
   app.use(cookieParser());
+  app.use(morgan('tiny'));
+
   const configService = app.get<ConfigService>(ConfigService);
 
   app.useGlobalPipes(

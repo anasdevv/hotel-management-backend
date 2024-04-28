@@ -9,6 +9,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
+import { BaseQuery } from 'src/utils/base.query';
+import { UsersQuery } from './dto/query';
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -23,8 +25,89 @@ export class UsersService {
     });
   }
 
-  findAll() {
-    return this.prisma.user.findMany();
+  async findAll({ pageNumber, pageSize, sort, orderBy, filter }: UsersQuery) {
+    let query: Prisma.UserFindManyArgs = {
+      where: {
+        isDeleted: false,
+      },
+      orderBy: {
+        [orderBy]: sort,
+      },
+    };
+    const skip = pageNumber > 0 ? (pageNumber - 1) * pageSize : 0;
+    if (orderBy) {
+      if (orderBy === 'bookings') {
+        query = {
+          ...query,
+          orderBy: {
+            bookings: {
+              _count: sort,
+            },
+          },
+        };
+      }
+    }
+    if (filter) {
+      if (filter === 'with-booking')
+        query = {
+          ...query,
+          where: {
+            ...query.where,
+            bookings: {
+              some: {},
+            },
+          },
+        };
+      else if (filter === 'without-booking')
+        query = {
+          ...query,
+          where: {
+            ...query.where,
+            bookings: {
+              none: {},
+            },
+          },
+        };
+    }
+    const [users, count] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        ...query,
+        skip,
+        take: pageSize,
+
+        select: {
+          id: true,
+          name: true,
+          country: true,
+          email: true,
+          bookings: {
+            select: {
+              totalPrice: true,
+            },
+          },
+          _count: {
+            select: {
+              bookings: true,
+            },
+          },
+        },
+      }),
+
+      this.prisma.user.count({
+        where: query.where,
+      }),
+    ]);
+    console.log(users);
+    return {
+      users: users.map((u) => ({
+        ...u,
+        fullName: u.name,
+        totalSpending: u.bookings.reduce((acc, b) => acc + b.totalPrice, 0),
+        // @ts-ignore
+        totalBookings: u._count?.bookings || 0,
+      })),
+      count,
+    };
   }
 
   findOne(id: string) {

@@ -21,11 +21,13 @@ model User {
   phoneNumber    String
   profilePicture String?
   country        String?
+  countryFlag    String?
   role           String    @default("guest")
   createdAt      DateTime  @default(now())
   bookings       Booking[]
   reviews        Review[]
   isDeleted      Boolean   @default(false)
+  orders         Order[]
 }
 
 model Room {
@@ -41,20 +43,23 @@ model Room {
   booking      Booking[]
   reviews      Review[]
   isDeleted    Boolean   @default(false)
+  updatedAt    DateTime?
 }
 
 model Feature {
-  id          String  @id @default(uuid())
+  id          String @id @default(uuid())
   featureName String
-  room        Room?   @relation(fields: [roomId], references: [id])
-  roomId      String?
+  rooms       Room[]
 }
 
 model Booking {
   id           String    @id @default(uuid())
   createdAt    DateTime  @default(now())
+  updatedAt    DateTime?
   startDate    DateTime
   endDate      DateTime
+  observations String?
+  amountPaid   Int       @default(0)
   numNights    Int
   totalPrice   Int
   isDeleted    Boolean   @default(false)
@@ -66,6 +71,7 @@ model Booking {
   userId       String?
   room         Room      @relation(fields: [roomId], references: [id])
   roomId       String
+  orders       Order[]
 }
 
 model FoodItem {
@@ -76,6 +82,7 @@ model FoodItem {
   picture     String
   isDeleted   Boolean     @default(false)
   orders      OrderItem[]
+  createdAt   DateTime    @default(now())
 }
 
 model Order {
@@ -83,6 +90,11 @@ model Order {
   createdAt  DateTime    @default(now())
   items      OrderItem[]
   totalPrice Float
+  User       User?       @relation(fields: [userId], references: [id])
+  userId     String?
+  Booking    Booking?    @relation(fields: [bookingId], references: [id])
+  bookingId  String?
+  updatedAt  DateTime?
 }
 
 model OrderItem {

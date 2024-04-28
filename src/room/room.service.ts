@@ -3,12 +3,8 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { RoomFilter } from './dto/filter';
+import { RoomQuery } from './dto/query';
 
-interface RoomQuery {
-  orderBy: Prisma.RoomOrderByWithRelationInput;
-  where: Prisma.RoomWhereInput;
-}
 @Injectable()
 export class RoomService {
   private readonly sortOptions = {
@@ -31,6 +27,7 @@ export class RoomService {
     return this.prisma.room.create({
       data: {
         ...room,
+
         features: {
           connect: features.map((featureId) => ({ id: featureId })),
         },
@@ -39,7 +36,7 @@ export class RoomService {
   }
 
   // todo select relevant fields only
-  async findAll({ pageNumber, pageSize, ...filter }: RoomFilter) {
+  async findAll({ pageNumber, pageSize, ...filter }: RoomQuery) {
     console.log(pageNumber);
     console.log(pageSize);
     const skip = pageNumber > 0 ? (pageNumber - 1) * pageSize : 0;
@@ -96,6 +93,29 @@ export class RoomService {
         },
       };
     }
+    if (filter.discount && filter.discount !== 'all') {
+      if (filter.discount === 'no-discount') {
+        query = {
+          ...query,
+          where: {
+            ...query.where,
+            discount: {
+              equals: 0,
+            },
+          },
+        };
+      } else if (filter.discount === 'with-discount') {
+        query = {
+          ...query,
+          where: {
+            ...query.where,
+            discount: {
+              gt: 0,
+            },
+          },
+        };
+      }
+    }
     if (filter.isBooked) {
       query = {
         ...query,
@@ -107,6 +127,7 @@ export class RoomService {
         },
       };
     }
+    console.log(query);
     const [rooms, count] = await this.prisma.$transaction([
       this.prisma.room.findMany({
         include: {
@@ -153,9 +174,9 @@ export class RoomService {
         data: {
           ...updateRoomDto,
           features: {
-            connect: updateRoomDto.features.map(
-              (f) => f,
-            ) as unknown as Prisma.FeatureWhereUniqueInput[],
+            connect: updateRoomDto.features.map((f) => ({
+              id: f,
+            })) as unknown as Prisma.FeatureWhereUniqueInput[],
           },
         },
       });
@@ -179,5 +200,10 @@ export class RoomService {
     } catch (error) {
       throw new NotFoundException();
     }
+  }
+  async count() {
+    const c = await this.prisma.room.count();
+    console.log('c ', c);
+    return c;
   }
 }

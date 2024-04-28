@@ -21,8 +21,10 @@ export class FeatureController {
   }
 
   @Get()
-  findAll() {
-    return this.featureService.findAll();
+  async findAll() {
+    const f = await this.featureService.findAll();
+    console.log('f', f);
+    return f;
   }
 
   @Patch(':id')

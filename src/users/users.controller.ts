@@ -8,12 +8,14 @@ import {
   Delete,
   UseInterceptors,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RemovePasswordInterceptor } from 'src/interceptors/remove.passwprd';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { UsersQuery } from './dto/query';
 
 @UseInterceptors(RemovePasswordInterceptor)
 @Controller('users')
@@ -27,8 +29,8 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() query: UsersQuery) {
+    return this.usersService.findAll(query);
   }
 
   @Get(':id')

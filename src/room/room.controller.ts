@@ -11,8 +11,7 @@ import {
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
-import { filter } from 'rxjs';
-import { RoomFilter } from './dto/filter';
+import { RoomQuery } from './dto/query';
 export interface IParamQuery {
   sort?: string;
   pageSize?: string;
@@ -27,12 +26,16 @@ export class RoomController {
 
   @Post()
   create(@Body() createRoomDto: CreateRoomDto) {
+    console.log(createRoomDto);
     return this.roomService.create(createRoomDto);
   }
-
+  @Get('count')
+  count() {
+    return this.roomService.count();
+  }
   @Get()
-  findAll(@Query() filter: RoomFilter) {
-    return this.roomService.findAll(filter);
+  findAll(@Query() query: RoomQuery) {
+    return this.roomService.findAll(query);
   }
 
   @Get(':id')

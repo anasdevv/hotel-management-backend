@@ -1,8 +1,9 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateFoodItemDto } from './dto/create-food-item.dto';
 import { UpdateFoodItemDto } from './dto/update-food-item.dto';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { FoodItemQuery } from './dto/FoodItem.query';
 
 @Injectable()
 export class FoodItemService {
@@ -14,12 +15,53 @@ export class FoodItemService {
     });
   }
 
-  findAll() {
-    return this.prisma.foodItem.findMany({
+  async findAll({
+    pageNumber,
+    pageSize,
+    orderBy,
+    sort,
+    search,
+  }: FoodItemQuery) {
+    const skip = pageNumber > 0 ? (pageNumber - 1) * pageSize : 0;
+    let query: Prisma.FoodItemFindManyArgs = {
+      orderBy: {
+        createdAt: 'desc',
+      },
       where: {
         isDeleted: false,
       },
-    });
+    };
+    if (orderBy && orderBy === 'price') {
+      query = {
+        ...query,
+        orderBy: {
+          price: sort,
+        },
+      };
+    }
+    if (search) {
+      query = {
+        ...query,
+        where: {
+          ...query.where,
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+      };
+    }
+    const [foodItems, count] = await this.prisma.$transaction([
+      this.prisma.foodItem.findMany({
+        ...query,
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.foodItem.count({
+        where: query.where,
+      }),
+    ]);
+    return { foodItems, count };
   }
 
   findOne(id: string) {

@@ -39,7 +39,9 @@ async function main() {
   const rooms = [];
   const foodItems = [];
   const orders = [];
-  for (let i = 0; i < fakerRounds; i++) {
+  const features = [];
+  let i = 0;
+  for (i = 0; i < fakerRounds; i++) {
     const startDate = new Date();
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 2);
@@ -64,6 +66,11 @@ async function main() {
           (room.regularPrice - (room.regularPrice * room.discount) / 100) * 2,
       },
     });
+    features[i] = prisma.feature.create({
+      data: {
+        featureName: faker.lorem.word(),
+      },
+    });
     orders[i] = prisma.order.create({
       data: {
         // price is not correct
@@ -80,7 +87,20 @@ async function main() {
     });
     rooms[i] = fakeRoom();
   }
-  await Promise.all([...bookings, ...rooms, ...foodItems, ...orders]);
+  for (; i < 2 * fakerRounds; i++) {
+    features[i] = prisma.feature.create({
+      data: {
+        featureName: faker.lorem.word(),
+      },
+    });
+  }
+  await Promise.all([
+    ...bookings,
+    ...rooms,
+    ...foodItems,
+    ...orders,
+    ...features,
+  ]);
   console.log(`generated ${fakerRounds} users`);
 }
 

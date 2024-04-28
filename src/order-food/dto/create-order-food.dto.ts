@@ -6,7 +6,13 @@
 // foodItem   FoodItem? @relation(fields: [foodItemId], references: [id])
 
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsPositive, Min, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsPositive,
+  IsString,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
 // foodItemId String?
 export class CreateOrderItemDto {
@@ -17,6 +23,9 @@ export class CreateOrderItemDto {
   quantity: number;
 }
 export class CreateOrderFoodDto {
+  @IsNotEmpty()
+  @IsString()
+  bookingId: string;
   @IsNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)

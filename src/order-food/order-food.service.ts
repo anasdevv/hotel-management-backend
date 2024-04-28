@@ -15,8 +15,20 @@ export class OrderFoodService {
         },
       },
     });
+
     return this.prisma.order.create({
       data: {
+        Booking: {
+          connect: {
+            id: createOrderFoodDto.bookingId,
+          },
+        },
+        User: {
+          connect: {
+            id: '123', //fetch id from jwt
+          },
+        },
+
         totalPrice: totalPrice._sum?.price || 0,
         items: {
           createMany: {
@@ -43,7 +55,9 @@ export class OrderFoodService {
   update(id: string, updateOrderFoodDto: UpdateOrderFoodDto) {
     return this.prisma.order.update({
       where: { id },
-      data: updateOrderFoodDto,
+      data: {
+        ...updateOrderFoodDto,
+      },
     });
   }
 

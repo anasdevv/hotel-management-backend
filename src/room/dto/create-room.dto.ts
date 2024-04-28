@@ -32,6 +32,5 @@ export class CreateRoomDto {
   @IsOptional()
   @IsArray()
   //   @ValidateNested({ each: true })
-  @Transform(({ value }) => value.map((val) => Number(val)))
   features?: string[];
 }

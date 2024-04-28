@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { FoodItemService } from './food-item.service';
 import { CreateFoodItemDto } from './dto/create-food-item.dto';
 import { UpdateFoodItemDto } from './dto/update-food-item.dto';
+import { FoodItemQuery } from './dto/FoodItem.query';
 
 @Controller('food-item')
 export class FoodItemController {
@@ -21,8 +23,8 @@ export class FoodItemController {
   }
 
   @Get()
-  findAll() {
-    return this.foodItemService.findAll();
+  findAll(@Query() query: FoodItemQuery) {
+    return this.foodItemService.findAll(query);
   }
 
   @Get(':id')
