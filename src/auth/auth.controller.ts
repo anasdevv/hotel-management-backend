@@ -6,6 +6,7 @@ import {
   UseInterceptors,
   Res,
   HttpCode,
+  Body,
 } from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local.guard';
 import { RemovePasswordInterceptor } from 'src/interceptors/remove.passwprd';
@@ -14,6 +15,7 @@ import { User } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { HTTP_CODE_METADATA } from '@nestjs/common/constants';
+import { SignupUserDto } from './dto/signup.dto';
 @UseInterceptors(RemovePasswordInterceptor)
 @Controller('auth')
 export class AuthController {
@@ -29,6 +31,10 @@ export class AuthController {
   ) {
     await this.authService.login(user, response);
     response.send(user);
+  }
+  @Post('signup')
+  create(@Body() signupUserDto: SignupUserDto) {
+    return this.authService.signup(signupUserDto);
   }
   async logout(
     @Res({

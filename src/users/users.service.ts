@@ -22,6 +22,11 @@ export class UsersService {
         ...res,
         password: hashedPassword,
       },
+      select: {
+        id: true,
+        email: true,
+        phoneNumber: true,
+      },
     });
   }
 

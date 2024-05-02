@@ -37,8 +37,8 @@ export class RoomService {
 
   // todo select relevant fields only
   async findAll({ pageNumber, pageSize, ...filter }: RoomQuery) {
-    console.log(pageNumber);
-    console.log(pageSize);
+    console.log('room query ', filter);
+    // console.log(pageSize);
     const skip = pageNumber > 0 ? (pageNumber - 1) * pageSize : 0;
     let query: Prisma.RoomFindManyArgs = {
       orderBy: {},
@@ -64,6 +64,32 @@ export class RoomService {
           [filter.orderBy]: filter.sort,
         };
       }
+    }
+    if (filter.caps && filter.caps.length > 0) {
+      console.log('filter . caps', filter.caps);
+      query = {
+        ...query,
+        where: {
+          maxCapacity: {
+            in: filter.caps,
+          },
+        },
+      };
+    }
+    if (filter.features && filter.features.length > 0) {
+      console.log('filter . features', filter.features);
+      query = {
+        ...query,
+        where: {
+          features: {
+            some: {
+              id: {
+                in: filter.features,
+              },
+            },
+          },
+        },
+      };
     }
     if (filter.minPrice !== undefined && filter.maxPrice !== undefined) {
       query = {

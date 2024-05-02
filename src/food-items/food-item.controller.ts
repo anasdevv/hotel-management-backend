@@ -13,7 +13,7 @@ import { CreateFoodItemDto } from './dto/create-food-item.dto';
 import { UpdateFoodItemDto } from './dto/update-food-item.dto';
 import { FoodItemQuery } from './dto/FoodItem.query';
 
-@Controller('food-item')
+@Controller('food-items')
 export class FoodItemController {
   constructor(private readonly foodItemService: FoodItemService) {}
 
