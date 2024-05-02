@@ -26,12 +26,16 @@ export class AuthService {
       expires.getSeconds() + this.configService.get('JWT_EXPIRATION'),
     );
     const token = await this.jwtService.signAsync(tokenPayload);
-    response.cookie('Authentication', token, {
-      httpOnly: true,
-      secure: false,
-      // secure: this.configService.get('NODE_ENV') === 'production',
-      sameSite: 'none',
-    });
+    // response.cookie('Authentication', token, {
+    //   httpOnly: true,
+    //   secure: false,
+    //   // secure: this.configService.get('NODE_ENV') === 'production',
+    //   sameSite: 'none',
+    // });
+    return {
+      ...user,
+      token,
+    };
   }
   async signup({ password, ...res }: SignupUserDto) {
     await this.usersService.validateCreateUser(res.email);

@@ -22,15 +22,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(
-    @CurrentUser() user: Omit<User, 'password'>,
-    @Res({
-      passthrough: true,
-    }) // If you want to leave the response handling logic to the framework, remember to set the passthrough option to true
-    response: Response,
-  ) {
-    await this.authService.login(user, response);
-    response.send(user);
+  async login(@CurrentUser() user: Omit<User, 'password'>, response: Response) {
+    return this.authService.login(user, response);
   }
   @Post('signup')
   create(@Body() signupUserDto: SignupUserDto) {

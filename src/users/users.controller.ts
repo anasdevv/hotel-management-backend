@@ -22,12 +22,11 @@ import { UsersQuery } from './dto/query';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@Query() query: UsersQuery) {
     return this.usersService.findAll(query);
