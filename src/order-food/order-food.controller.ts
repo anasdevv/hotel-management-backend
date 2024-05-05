@@ -10,14 +10,19 @@ import {
 import { OrderFoodService } from './order-food.service';
 import { CreateOrderFoodDto } from './dto/create-order-food.dto';
 import { UpdateOrderFoodDto } from './dto/update-order-food.dto';
+import { CurrentUser } from 'src/decorators/current.user';
+import { User } from '@prisma/client';
 
 @Controller('order-food')
 export class OrderFoodController {
   constructor(private readonly orderFoodService: OrderFoodService) {}
 
   @Post()
-  create(@Body() createOrderFoodDto: CreateOrderFoodDto) {
-    return this.orderFoodService.create(createOrderFoodDto);
+  create(
+    @CurrentUser() user: User,
+    @Body() createOrderFoodDto: CreateOrderFoodDto,
+  ) {
+    return this.orderFoodService.create(user.id, createOrderFoodDto);
   }
 
   @Get()

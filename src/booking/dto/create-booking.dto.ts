@@ -1,35 +1,51 @@
-import { IsBoolean, IsInt, IsString, Min, Validate } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  Validate,
+} from 'class-validator';
 import { Transform, TransformFnParams } from 'class-transformer';
 class BookingDates {
   startDate: Date;
   endDate: Date;
 }
 export class CreateBookingDto {
-  @Transform(({ value }) => new Date(value))
+  @Transform(({ value }) => {
+    console.log('start date ', value);
+    return new Date(value);
+  })
+  @IsNotEmpty()
   startDate: Date;
 
   @Transform(({ value }) => new Date(value))
+  @IsNotEmpty()
   endDate: Date;
 
+  @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(1)
   numNights: number;
 
+  @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(0)
   totalPrice: number;
 
   @IsString()
-  status: string;
-
-  @IsString()
-  userId: string;
+  status: string = 'not-confirmed';
 
   @IsString()
   roomId: string;
 
   @IsBoolean()
   hasBreakfast: boolean;
+
+  @IsOptional()
+  @IsString()
+  observations: string;
 
   @Validate(BookingDatesValidator)
   bookingDates: BookingDates;

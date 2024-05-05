@@ -170,21 +170,124 @@ export class RoomService {
     return { rooms, count };
   }
 
-  findOne(id: string) {
+  async findOne(id: string, userId?: string) {
     try {
-      return this.prisma.room.findFirstOrThrow({
-        where: {
-          AND: {
-            id,
-            isDeleted: false,
+      // todo after authorization
+      // const canAddOrUpdateReview = this.prisma.room.findFirst({
+      //   where: {
+      //     AND: {
+      //       id,
+      //       isDeleted: false,
+      //     },
+      //     booking: {
+      //       some: {
+      //         userId,
+      //       },
+      //     },
+      //   },
+      //   select: {
+      //     reviews: {
+      //       where: {
+      //         userId,
+      //       },
+      //       select: {
+      //         comment: true,
+      //         rating: true,
+      //         userId: true,
+      //       },
+      //     },
+      //   },
+      // });
+      const [room, ratingAggregation] = await this.prisma.$transaction([
+        this.prisma.room.findFirstOrThrow({
+          where: {
+            AND: {
+              id,
+              isDeleted: false,
+            },
           },
-        },
-      });
+          select: {
+            maxCapacity: true,
+            regularPrice: true,
+            id: true,
+            description: true,
+            roomImage: true,
+            title: true,
+            discount: true,
+            features: {
+              select: {
+                featureName: true,
+                id: true,
+              },
+            },
+            // reviews: {},
+          },
+        }),
+        this.prisma.review.aggregate({
+          where: {
+            roomId: id,
+          },
+          _avg: {
+            rating: true,
+          },
+          _count: true,
+        }),
+      ]);
+      room['reviews'] = {
+        count: ratingAggregation._count,
+        rating: ratingAggregation?._avg?.rating ?? 0,
+      };
+      console.log('rating aggregation ', ratingAggregation);
+      // await this.prisma.review.aggregate({
+      //   where: {
+      //     roomId: id,
+      //   },
+      //   _avg: {
+      //     rating: true,
+      //   },
+      //   _count: true,
+      // });
+      // const room = await this.prisma.room.findFirstOrThrow({
+      //   where: {
+      //     AND: {
+      //       id,
+      //       isDeleted: false,
+      //     },
+      //   },
+      //   select: {
+      //     maxCapacity: true,
+      //     regularPrice: true,
+      //     id: true,
+      //     description: true,
+      //     roomImage: true,
+      //     title: true,
+      //     discount: true,
+      //     features: {
+      //       select: {
+      //         featureName: true,
+      //         id: true,
+      //       },
+      //     },
+      //     reviews: {},
+      //   },
+      // });
+      console.log('room ', room);
+      return room;
     } catch (error) {
       throw new NotFoundException();
     }
   }
-
+  findAllPreview() {
+    return this.prisma.room.findMany({
+      select: {
+        title: true,
+        id: true,
+      },
+      where: {
+        isDeleted: false,
+      },
+    });
+  }
   async update(id: string, updateRoomDto: UpdateRoomDto) {
     try {
       await this.prisma.room.findFirstOrThrow({
@@ -227,6 +330,7 @@ export class RoomService {
       throw new NotFoundException();
     }
   }
+
   async count() {
     const c = await this.prisma.room.count();
     console.log('c ', c);

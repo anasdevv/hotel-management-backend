@@ -6,17 +6,42 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class OrderFoodService {
   constructor(private readonly prisma: PrismaService) {}
-  async create(createOrderFoodDto: CreateOrderFoodDto) {
-    const totalPrice = await this.prisma.foodItem.aggregate({
-      _sum: { price: true },
+  async create(userId: string, createOrderFoodDto: CreateOrderFoodDto) {
+    const items = await this.prisma.foodItem.findMany({
       where: {
-        id: {
-          in: createOrderFoodDto.orders.map((o) => o.id),
-        },
+        AND: [
+          {
+            id: {
+              in: createOrderFoodDto.orders.map((o) => o.id),
+            },
+          },
+          {
+            isDeleted: false,
+          },
+        ],
+      },
+      select: {
+        id: true,
+        price: true,
       },
     });
+    const booking = await this.prisma.booking.findFirst({
+      where: {
+        id: createOrderFoodDto.bookingId,
+      },
+      select: {
+        totalPrice: true,
+      },
+    });
+    let totalPrice = 0;
 
-    return this.prisma.order.create({
+    for (const order of createOrderFoodDto.orders) {
+      const item = items.find((item) => item.id === order.id);
+      if (item) {
+        totalPrice += item.price * order.quantity;
+      }
+    }
+    await this.prisma.order.create({
       data: {
         Booking: {
           connect: {
@@ -25,11 +50,11 @@ export class OrderFoodService {
         },
         User: {
           connect: {
-            id: '123', //fetch id from jwt
+            id: userId, //fetch id from jwt
           },
         },
 
-        totalPrice: totalPrice._sum?.price || 0,
+        totalPrice,
         items: {
           createMany: {
             data: createOrderFoodDto.orders.map((o) => ({
@@ -40,6 +65,17 @@ export class OrderFoodService {
             })),
           },
         },
+      },
+    });
+    return this.prisma.booking.update({
+      where: {
+        id: createOrderFoodDto.bookingId,
+      },
+      data: {
+        totalPrice: booking.totalPrice + totalPrice,
+      },
+      select: {
+        id: true,
       },
     });
   }

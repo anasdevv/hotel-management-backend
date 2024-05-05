@@ -14,13 +14,32 @@ import { Prisma } from '@prisma/client';
 export class BookingService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createBookingDto: CreateBookingDto) {
+  async create(
+    userId: string,
+    { roomId, ...createBookingDto }: CreateBookingDto,
+  ) {
     await this.validateCreateBooking(
       createBookingDto.startDate,
       createBookingDto.endDate,
-      createBookingDto.roomId,
+      roomId,
     );
-    return this.prisma.booking.create({ data: createBookingDto });
+    console.log('create booking dto ', createBookingDto);
+    return this.prisma.booking.create({
+      data: {
+        ...createBookingDto,
+        // userId,
+        user: {
+          connect: {
+            id: userId,
+          },
+        },
+        room: {
+          connect: {
+            id: roomId,
+          },
+        },
+      },
+    });
   }
   async recentBooking(days: number) {
     const currentDate = new Date();
@@ -225,9 +244,12 @@ export class BookingService {
       });
       const roomPrice =
         (booking.room.regularPrice - booking.room.discount) * booking.numNights;
-      const extrasPrice = booking.orders.reduce((sum, acc) => {
-        return sum + acc.totalPrice;
-      }, 0);
+      const extrasPrice = booking.orders.reduce(
+        (sum, acc) => {
+          return sum + acc.totalPrice;
+        },
+        booking.hasBreakfast ? 20 : 0,
+      );
       console.log(booking);
       return {
         ...booking,
@@ -286,7 +308,56 @@ export class BookingService {
       throw new BadRequestException(error.message);
     }
   }
-
+  findUnavailableDates(roomId: string) {
+    return this.prisma.booking.findMany({
+      where: {
+        AND: [
+          {
+            isDeleted: false,
+          },
+          {
+            roomId,
+          },
+          {
+            OR: [
+              {
+                startDate: {
+                  lte: new Date(),
+                },
+              },
+              {
+                endDate: {
+                  gte: new Date(),
+                },
+              },
+            ],
+          },
+        ],
+      },
+      select: {
+        startDate: true,
+        endDate: true,
+      },
+    });
+  }
+  canOrderFood(userId: string) {
+    return this.prisma.booking.findMany({
+      where: {
+        AND: [
+          {
+            userId,
+          },
+          {
+            status: 'checked-in',
+          },
+          // {}
+        ],
+      },
+      select: {
+        id: true,
+      },
+    });
+  }
   async validateCreateBooking(startDate: Date, endDate: Date, roomId: string) {
     const existingBooking = await this.prisma.booking.findFirst({
       where: {
