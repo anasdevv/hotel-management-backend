@@ -85,6 +85,7 @@ export class UsersService {
           name: true,
           country: true,
           email: true,
+          countryFlag: true,
           bookings: {
             select: {
               totalPrice: true,

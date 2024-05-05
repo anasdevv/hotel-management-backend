@@ -18,6 +18,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { UsersQuery } from './dto/query';
 
 @UseInterceptors(RemovePasswordInterceptor)
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -26,7 +27,6 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
-  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@Query() query: UsersQuery) {
     return this.usersService.findAll(query);

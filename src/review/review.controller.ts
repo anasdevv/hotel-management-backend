@@ -6,23 +6,27 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { CurrentUser } from 'src/decorators/current.user';
 import { User } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
-@Controller('review')
+@UseGuards(JwtAuthGuard)
+@Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
-  @Post()
+  @Post(':roomId')
   create(
+    @Param('roomId') roomId: string,
     @CurrentUser() user: Omit<User, 'password'>,
     @Body() createReviewDto: CreateReviewDto,
   ) {
-    return this.reviewService.create(user.id, createReviewDto);
+    return this.reviewService.create(user.id, roomId, createReviewDto);
   }
 
   @Get('/user/:id')

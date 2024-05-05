@@ -59,9 +59,7 @@ export class OrderFoodService {
           createMany: {
             data: createOrderFoodDto.orders.map((o) => ({
               quantity: o.quantity,
-              foodItem: {
-                connect: { id: o.id },
-              },
+              foodItemId: o.id, // Fix: Assign the foodItemId directly to o.id
             })),
           },
         },

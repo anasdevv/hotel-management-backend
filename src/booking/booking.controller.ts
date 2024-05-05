@@ -29,7 +29,16 @@ export class BookingController {
     console.log('ccc   ', createBookingDto);
     return this.bookingService.create(user.id, createBookingDto);
   }
-
+  @Get('can-order-food')
+  canOrderFood(@CurrentUser() user: User) {
+    console.log('here ');
+    return this.bookingService.canOrderFood(user.id);
+  }
+  @Get('can-add-review/:roomId')
+  canAddReview(@Param('roomid') roomId: string, @CurrentUser() user: User) {
+    console.log('here ');
+    return this.bookingService.canAddReview(user.id, roomId);
+  }
   @Get()
   findAll(@Query() query: BookingQuery) {
     return this.bookingService.findAll(query);
@@ -39,14 +48,12 @@ export class BookingController {
   findOne(@Param('id') id: string) {
     return this.bookingService.findOne(id);
   }
+
   @Get('unavailable-date/:id')
   findUnavailableDates(@Param('id') roomId: string) {
     return this.bookingService.findUnavailableDates(roomId);
   }
-  @Get('can-order')
-  canOrderFood(@CurrentUser() user: User) {
-    return this.bookingService.canOrderFood(user.id);
-  }
+
   @Get('recent/:days')
   recentBookings(@Param('days') days: string) {
     return this.bookingService.recentBooking(+days);

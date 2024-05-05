@@ -341,6 +341,7 @@ export class BookingService {
     });
   }
   canOrderFood(userId: string) {
+    console.log('here');
     return this.prisma.booking.findMany({
       where: {
         AND: [
@@ -357,6 +358,30 @@ export class BookingService {
         id: true,
       },
     });
+  }
+  async canAddReview(userId: string, roomId: string) {
+    console.log('roomId ', roomId);
+    const bookings = await this.prisma.booking.findMany({
+      select: {
+        id: true,
+        status: true,
+      },
+      where: {
+        AND: [
+          {
+            isDeleted: false,
+          },
+          {
+            userId,
+          },
+          {
+            roomId,
+          },
+        ],
+      },
+    });
+    console.log('bookingss ', bookings);
+    return bookings.length > 0;
   }
   async validateCreateBooking(startDate: Date, endDate: Date, roomId: string) {
     const existingBooking = await this.prisma.booking.findFirst({

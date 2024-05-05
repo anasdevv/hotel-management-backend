@@ -5,12 +5,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ReviewService {
-  private readonly logger: Logger;
+  // private readonly logger: Logger;
   constructor(private readonly prisma: PrismaService) {}
-  create(userId: string, { roomId, ...res }: CreateReviewDto) {
+  create(userId: string, roomId: string, createReviewDto: CreateReviewDto) {
     return this.prisma.review.create({
       data: {
-        ...res,
+        ...createReviewDto,
         room: {
           connect: {
             id: roomId,
@@ -37,6 +37,16 @@ export class ReviewService {
       };
     }
     return this.prisma.review.findMany({
+      select: {
+        comment: true,
+        id: true,
+        rating: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
       where: {
         AND: [
           {
@@ -69,7 +79,7 @@ export class ReviewService {
         data: updateReviewDto,
       });
     } catch (error) {
-      this.logger.error(JSON.stringify(error));
+      // this.logger.error(JSON.stringify(error));
       throw new NotFoundException();
     }
   }

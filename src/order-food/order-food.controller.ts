@@ -6,13 +6,16 @@ import {
   Patch,
   Param,
   Delete,
+  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { OrderFoodService } from './order-food.service';
 import { CreateOrderFoodDto } from './dto/create-order-food.dto';
 import { UpdateOrderFoodDto } from './dto/update-order-food.dto';
 import { CurrentUser } from 'src/decorators/current.user';
 import { User } from '@prisma/client';
-
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+@UseGuards(JwtAuthGuard)
 @Controller('order-food')
 export class OrderFoodController {
   constructor(private readonly orderFoodService: OrderFoodService) {}
@@ -22,7 +25,7 @@ export class OrderFoodController {
     @CurrentUser() user: User,
     @Body() createOrderFoodDto: CreateOrderFoodDto,
   ) {
-    return this.orderFoodService.create(user.id, createOrderFoodDto);
+    return this.orderFoodService.create(user?.id, createOrderFoodDto);
   }
 
   @Get()

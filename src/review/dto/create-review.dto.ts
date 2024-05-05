@@ -9,7 +9,8 @@ import {
 } from 'class-validator';
 
 export class CreateReviewDto {
-  @IsNotEmpty()
+  // @IsNotEmpty()
+  @IsOptional()
   @IsString()
   comment: string;
 
@@ -18,8 +19,4 @@ export class CreateReviewDto {
   @Min(1)
   @Max(5)
   rating: number;
-
-  @IsNotEmpty()
-  @IsString()
-  roomId: string;
 }

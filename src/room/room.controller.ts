@@ -46,7 +46,6 @@ export class RoomController {
   findAllPreview() {
     return this.roomService.findAllPreview();
   }
-  @Get('/unavailable-dates/:id')
   @Get(':id')
   findOne(
     @Param('id') id: string,
