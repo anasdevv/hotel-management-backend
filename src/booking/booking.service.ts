@@ -46,12 +46,25 @@ export class BookingService {
 
     const startDateRange = new Date();
     startDateRange.setDate(currentDate.getDate() - days);
+
     const query: Prisma.BookingFindManyArgs = {
       where: {
-        createdAt: {
-          gte: startDateRange.toISOString(),
-          lte: currentDate.toISOString(),
-        },
+        AND: [
+          {
+            isDeleted: false,
+          },
+          {
+            createdAt: {
+              gte: startDateRange.toISOString(),
+              lte: currentDate.toISOString(),
+            },
+          },
+          {
+            status: {
+              notIn: ['cancelled'],
+            },
+          },
+        ],
       },
     };
     const [bookings, count] = await this.prisma.$transaction([
@@ -88,10 +101,19 @@ export class BookingService {
     startDateRange.setDate(currentDate.getDate() - days);
     return this.prisma.booking.findMany({
       where: {
-        startDate: {
-          gte: startDateRange.toISOString(),
-          lte: currentDate.toISOString(),
-        },
+        AND: [
+          {
+            startDate: {
+              gte: startDateRange.toISOString(),
+              lte: currentDate.toISOString(),
+            },
+          },
+          {
+            status: {
+              notIn: ['cancelled'],
+            },
+          },
+        ],
       },
       select: {
         numNights: true,
@@ -172,6 +194,7 @@ export class BookingService {
           totalPrice: true,
           checkinDate: true,
           checkoutDate: true,
+          observations: true,
           id: true,
           room: {
             select: {
@@ -205,7 +228,80 @@ export class BookingService {
       count,
     };
   }
-
+  async findOneByUserId(userId: string) {
+    try {
+      const test = this.prisma.booking.findMany({
+        select: {
+          userId: true,
+        },
+      });
+      console.log('test ', test);
+      const bookings = await this.prisma.booking.findMany({
+        orderBy: {
+          createdAt: 'desc',
+        },
+        where: {
+          AND: [
+            {
+              isDeleted: false,
+            },
+            {
+              user: {
+                id: userId,
+              },
+            },
+          ],
+        },
+        select: {
+          status: true,
+          id: true,
+          numGuests: true,
+          startDate: true,
+          endDate: true,
+          roomId: true,
+          room: {
+            select: {
+              title: true,
+              maxCapacity: true,
+              discount: true,
+              regularPrice: true,
+              id: true,
+            },
+          },
+          totalPrice: true,
+          hasBreakfast: true,
+          orders: {
+            select: {
+              totalPrice: true,
+            },
+          },
+        },
+      });
+      const res = bookings.map((b) => {
+        return {
+          ...b,
+          // totalPrice: b.totalPrice,
+          // status: b.status,
+          // startDate: b.startDate,
+          roomTitle: b.room.title,
+          // maxCapacity: b.room.maxCapacity,
+          // roomId: b.room.id,
+          // discount: b.room.discount,
+          ordersCount: b.orders.length,
+          duration: Math.floor(
+            (new Date(b.endDate).getTime() - new Date(b.startDate).getTime()) /
+              (1000 * 60 * 60 * 24),
+          ),
+          ordersPrice: b.orders.reduce((acc, o) => {
+            return acc + o.totalPrice;
+            // return acc;
+          }, 0),
+        };
+      });
+      console.log('res ', res);
+      return res;
+    } catch (error) {}
+  }
   async findOne(id: string) {
     try {
       const booking = await this.prisma.booking.findUniqueOrThrow({
@@ -319,6 +415,11 @@ export class BookingService {
             roomId,
           },
           {
+            status: {
+              notIn: ['cancelled'],
+            },
+          },
+          {
             OR: [
               {
                 startDate: {
@@ -377,6 +478,11 @@ export class BookingService {
           {
             roomId,
           },
+          {
+            status: {
+              notIn: ['cancelled'],
+            },
+          },
         ],
       },
     });
@@ -388,6 +494,11 @@ export class BookingService {
       where: {
         AND: [
           { roomId },
+          {
+            status: {
+              notIn: ['cancelled'],
+            },
+          },
           {
             OR: [
               { startDate: { lte: startDate }, endDate: { gte: startDate } },
