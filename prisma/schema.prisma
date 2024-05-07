@@ -65,6 +65,7 @@ model Booking {
   isDeleted    Boolean   @default(false)
   hasBreakfast Boolean
   status       String
+  numGuests    Int?      @default(1)
   checkinDate  DateTime?
   checkoutDate DateTime?
   user         User?     @relation(fields: [userId], references: [id])

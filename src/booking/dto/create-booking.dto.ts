@@ -34,6 +34,11 @@ export class CreateBookingDto {
   @Min(0)
   totalPrice: number;
 
+  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(1)
+  numGuests: number = 1;
+
   @IsString()
   status: string = 'not-confirmed';
 

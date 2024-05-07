@@ -27,6 +27,10 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
+  // @Get('/booking/:userId')
+  // findOneByUserid(@Param('userId') id: string) {
+  //   return this.bookingService.findOne(id);
+  // }
   @Get()
   findAll(@Query() query: UsersQuery) {
     return this.usersService.findAll(query);

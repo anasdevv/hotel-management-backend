@@ -29,16 +29,19 @@ export class BookingController {
     console.log('ccc   ', createBookingDto);
     return this.bookingService.create(user.id, createBookingDto);
   }
+  @Get('/user/:userId')
+  findOneByUserid(@Param('userId') id: string) {
+    return this.bookingService.findOneByUserId(id);
+  }
   @Get('can-order-food')
   canOrderFood(@CurrentUser() user: User) {
-    console.log('here ');
     return this.bookingService.canOrderFood(user.id);
   }
   @Get('can-add-review/:roomId')
   canAddReview(@Param('roomid') roomId: string, @CurrentUser() user: User) {
-    console.log('here ');
     return this.bookingService.canAddReview(user.id, roomId);
   }
+
   @Get()
   findAll(@Query() query: BookingQuery) {
     return this.bookingService.findAll(query);
